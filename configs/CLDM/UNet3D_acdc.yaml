@@ -1,0 +1,134 @@
+# ============================================================
+#  ACDC cardiac — UNet3D + DVFVAE + MambaMorph backbone
+#  train_test: train | test
+# ============================================================
+
+vae_model:       dvfvae
+diffusion_model: unet3d
+
+# --- registration backbone ---
+reg_model:              mambamorph
+vm_checkpoint:          /store/usagers/p123507/MoPred/outputs/Mambamorph_ACDC/logs/07_20/16.09._mambamorph_acdc_run/mambamorph/model_best_mm.pth
+mambamorph_patch_size:  2
+mambamorph_freq_aware:  true
+mambamorph_embed_dim: 48
+reference_slices_path : 4D_MoPred_liver/mopred/data/reference_slices.csv
+
+# Set to resume from a CLDM checkpoint (leave empty to train from scratch)
+checkpoint: ""
+
+# --- paths ---
+logging_dir:  outputs/CLDM_ACDC/unet3d
+data_dir:     /volatile/data/cam/ACDC/database
+downsample_to_liver: true
+cache_dir:    ""
+name:         overfit_acdc_diversityloss_128pfull
+
+# Fill in once the corresponding Stage-1 run is complete:
+vae_dir_name:   "/usagers4/p123507/MoPred/outputs/VAE_ACDC/logs/08_16/11.28._DVFVAE_MM_acdc_run"   
+vae_checkpoint: ""
+
+# Pretrained context encoder checkpoints ({fold_idx} substituted per fold)
+tmnet_path:  "/usagers4/p123507/MoPred/outputs/CondiNet_ACDC/logs/08_16/11.28._CondiNet_MM_acdc_run/fold_{fold_idx}/condinet_dvfsup2/model_best_condinet.pth"
+rvnet_path:  "/usagers4/p123507/MoPred/outputs/RefCondNet/logs/07_17/17.53._RefCondNet_ACDC_SparK_run/fold_0/refenc_spark/model_best_refenc.pth"
+
+# --- runtime ---
+gpu_idx:     "0"
+num_workers: 6
+seed:        123
+
+# --- data ---
+nb_inputs:   4
+tp:          1
+stride:      2   # temporal stride between input frames (1 = consecutive; 3 → covers ~48% of cardiac cycle with nb_inputs=4)
+
+# Conditioning slice: sagittal short-axis at sag_pos=16 (D//2).
+# Volumes are 128×128; TMNet retrained at 128×128 → full slice passed directly.
+# Backbone [2,2,2] on (128,128) → (16,16) features.
+condi_type:     "1"
+cor_pos:        64
+condi_img_size: [64, 64]
+
+# --- Stage-2 training ---
+diffusion_epochs:   80
+lr:                 1e-4
+scheduler_patience: 3
+ddpm_weight:        1.0
+smooth_weight:      0.0     # off for overfit test — regularisation fights memorisation
+recon_weight:       0.0     # direct DVF reconstruction signal at every step (low_tau_frac=1.0)
+diversity_weight:  1.0
+amplitude_weight:  0.0
+batch_size:         8
+loss:               ncc_as_loss
+
+# --- DDPM schedule ---
+T:          1000
+beta_max:   0.2
+ddim_steps: 100
+
+# ============================================================
+#  VAE sub-blocks
+# ============================================================
+
+dvfvae:
+  base_channels:    16
+  latent_channels:  16
+  depth:            3
+  beta:             1.0e-2
+  lam_smooth:       0.05
+  lam_ffl:          0.1
+  ffl_alpha:        0.0
+  horizon:          1
+  use_bending:      true
+  recon_loss_type:  mse    # mse | ncc
+  band_low_thresh:  0.0 #0.3
+  band_high_thresh: 0.0 #0.6
+  lam_band_mid: 0.0 #0.1
+  lam_band_high: 0.0 #1.0
+  band_loss_type: energy_ratio    # pointwise | energy_ratio
+
+# ============================================================
+#  UNet3D sub-block
+# ============================================================
+
+use_seg_mask: False
+
+unet3d:
+  num_frames:     4       # nb_inputs for ACDC
+  horizon:        1
+  vol_size:       [32, 64, 64]   # full ACDC canonical shape
+  pre_latent_dim: 64
+  Tr_n_heads:     8
+  Tr_enc_layers:  3
+  Tr_dec_layers:  3
+  condi_channels: [16, 32, 64]
+  Tr_norm_before: true
+  condi_type:     "1"     # sagittal short-axis (must match top-level condi_type)
+  prior_type:     learned
+  unet_base_ch:    64
+  unet_ch_mults:   [1, 2]
+  unet_time_dim:   128
+  num_res_blocks:  2
+  res_dropout:     0.0
+  use_self_attn:   true
+  cond_type:       film
+  cond_n_heads:    4
+  latent_ch:       16
+  low_tau_frac:    0.5
+  snr_gamma:       5.0
+  use_spatial_weight:  False
+  spatial_weight_max:  3.0
+  cfg_scale:       1.0
+  predict_mode:    v
+  use_h_t:         True
+  use_f_ref:       True
+  use_cond_proj:   True
+  ctx_mode:        film
+  use_bottleneck_attn: False
+  self_attn_full_res:  True
+  zero_context:    False
+  inbatch_div_weight:  0.0
+
+# Early stopping
+early_stopping_patience: 12
+early_stopping_delta:    0.0001

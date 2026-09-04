@@ -1,0 +1,63 @@
+vae_model: dvfvae
+
+# --- paths ---
+logging_dir: outputs/VAE
+data_dir:    /store/usagers/livazra/Nav_dataset/
+name:        DVFVAE_MM_run
+
+# --- registration backbone ---
+reg_model:              mambamorph
+vm_checkpoint:          /store/usagers/p123507/MoPred/outputs/MambaMorph/logs/07_14/20.55._mambamorph_liver_run/mambamorph/model_best_mm.pth
+mambamorph_patch_size:  2
+mambamorph_freq_aware:  true
+mambamorph_embed_dim: 48
+
+# --- runtime ---
+gpu_idx:     "2"
+num_workers: 6
+seed:        123
+
+# --- data ---
+nb_inputs:   3
+tp:          1
+
+# --- training ---
+vae_epochs:  100
+lr_vae:      1e-4
+batch_size:  16
+
+# Optimizer
+optimizer: adamw          # choices: adam, adamw, sgd
+weight_decay: 1.0e-5
+
+# Scheduler
+scheduler: plateau
+plateau_factor: 0.5
+plateau_patience: 3
+plateau_min_lr: 1.0e-7
+plateau_threshold: 1.0e-3
+plateau_mode: min
+
+# Early stopping
+early_stopping_patience: 15
+early_stopping_delta: 1e-3
+
+beta_steps: 20   # ramp beta 0 → target over 20 epochs
+
+
+dvfvae:
+  base_channels:    16
+  latent_channels:  16
+  depth:            3
+  beta:             1.0e-2
+  lam_smooth:       0.05
+  lam_ffl:          0.1
+  ffl_alpha:        0.0
+  horizon:          1
+  use_bending:      true
+  recon_loss_type:  mse    # mse | ncc
+  band_low_thresh:  0.0 #0.3
+  band_high_thresh: 0.0 #0.6
+  lam_band_mid: 0.0 #0.1
+  lam_band_high: 0.0 #1.0
+  band_loss_type: energy_ratio    # pointwise | energy_ratio

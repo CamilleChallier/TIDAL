@@ -1,0 +1,88 @@
+# --- paths ---
+logging_dir: outputs/TMNet_ACDC
+data_dir:    /volatile/data/cam/ACDC/database
+cache_dir:   ""
+name:        TMNet_MM_acdc_run
+
+# --- registration backbone ---
+reg_model:              mambamorph
+vm_checkpoint:          /store/usagers/p123507/MoPred/outputs/Mambamorph_ACDC/logs/07_20/16.09._mambamorph_acdc_run/mambamorph/model_best_mm.pth
+mambamorph_patch_size:  2
+mambamorph_freq_aware:  true
+mambamorph_embed_dim: 48
+reference_slices_path : 4D_MoPred_liver/mopred/data/reference_slices.csv
+
+# --- runtime ---
+gpu_idx:     "0"
+num_workers: 6
+seed:        123
+
+# --- data ---
+nb_inputs:   4
+tp:          1
+vol_size:    [32, 64, 64]  
+stride:      2  
+
+# Conditioning slice positions (ACDC mid-ventricular short-axis plane):
+#   condi_type "1" (sagittal): sag_pos = D//2 = 16  ← active (128×128 short-axis view)
+#   condi_type "2" (coronal):  cor_pos = H//2 = 64  ← not used with type "1"
+cor_pos: 16
+
+# --- training ---
+vae_epochs:  50
+lr_vae:      1e-5
+batch_size:  16
+
+optimizer:    adamw
+weight_decay: 1.0e-3
+
+# Scheduler
+scheduler:       cosine
+cosine_t_max:    200
+cosine_eta_min:  1.0e-7
+
+# Early stopping
+early_stopping_patience: 25
+early_stopping_delta:    1e-4
+
+kl_warmup_epochs: 10
+
+# Model
+tmnet_horizon:        1
+tmnet_num_frames:     4
+tmnet_condi_channels: [16, 32, 64]
+tmnet_Tr_n_heads:     8
+tmnet_Tr_enc_layers:  3
+tmnet_Tr_dec_layers:  3
+tmnet_Tr_norm_before: true
+tmnet_pre_latent_dim: 64
+tmnet_condi_type:     "1"   # sagittal mid-plane (H, W) = (128, 128) at sag_pos=16
+tmnet_prior_type:     "learned"
+
+# Image-supervision
+tmnet_img_loss:               mse
+tmnet_kl_beta:                0.2   # lowered from 0.8 — less KL pressure lets prior latent retain phase information
+tmnet_kl_warmup_epochs:       20
+
+# Auxiliary alignment losses (amplitude has no cardiac equivalent — keep 0.0)
+tmnet_phi_loss_weight:        1.0   
+tmnet_phi_loss_weight_prior:  2.0   # explicit prior-path supervision, stronger than posterior to counteract KL collapse
+tmnet_phi_warmup_epochs:      10    # ramp phi_loss_weight/_prior linearly over this many epochs, same pattern as kl_beta
+tmnet_amp_loss_weight:        0.0   # no navigator amplitude for cardiac
+tmnet_img_loss_weight:        1.0   # image reconstruction: MSE(I_seq_t, Igt_t) — forces phase-varying DVF amplitude
+tmnet_dvf_amp_loss_weight:    1.0   # DVF amplitude matching: MSE(|pred_amp|, |gt_amp|) per timestep
+
+# Backbone [2,2,2] (3 stride-2 convs) on (128,128) → (16,16) features.
+downsample_to_liver:           True
+tmnet_patch_size:           8
+tmnet_mask_ratio:           0.6
+tmnet_mask_warmup_epochs:   0
+tmnet_img_size:             [64, 64]
+
+# Phase-contrastive loss (soft supervised contrastive on the prior-path embedding;
+# see PhaseContrastiveLoss / TMNet_Tr_priormulti_image.contrast_proj).
+# 0.0 = disabled (contrast_proj is not even instantiated).
+tmnet_lambda_phase_con:       0.1
+tmnet_phase_con_temp:         0.1   # softmax temperature over cosine similarities
+tmnet_phase_con_kappa:        8.0   # von Mises kernel concentration — larger = sharper "same phase" weighting
+tmnet_phase_con_warmup_epochs: 10   # ramp phase_con_weight linearly, same pattern as kl_beta

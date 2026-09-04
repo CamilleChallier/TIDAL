@@ -1,0 +1,23 @@
+[build-system]
+requires = [
+    "setuptools>=68",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "tidal"
+version = "0.1.0"
+description = "TIDAL: Temporally-Informed Diffusion with Adaptive Latents for 4D deformation prediction"
+readme = "README.md"
+requires-python = ">=3.10"
+
+authors = [
+    {name = "Camille Challier"}
+]
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mopred*"]

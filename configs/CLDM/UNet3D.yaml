@@ -1,0 +1,118 @@
+# ============================================================
+#  Unified pipeline config — UNet3D + DVFVAE + MambaMorph backbone
+#  train_test: train | test
+# ============================================================
+
+vae_model:       dvfvae
+diffusion_model: unet3d
+
+# --- paths ---
+logging_dir:     outputs/CLDM/unet3d
+data_dir:        /store/usagers/livazra/Nav_dataset/
+name:            dvfvae_mm_unet3d_run
+
+# --- registration backbone ---
+reg_model:              mambamorph
+vm_checkpoint:          /store/usagers/p123507/MoPred/outputs/MambaMorph/logs/07_14/20.55._mambamorph_liver_run/mambamorph/model_best_mm.pth
+mambamorph_patch_size:  2
+mambamorph_freq_aware:  true
+mambamorph_embed_dim:   48
+
+# Set to resume from a CLDM checkpoint (leave empty to train from scratch)
+checkpoint: ""
+
+# VAE run that produced latent_stats.pt and model_best_vae.pth
+vae_dir_name:    "outputs/VAE/logs/07_21/11.35._DVFVAE_MM_run"
+vae_checkpoint:  ""
+
+# Pretrained context encoder checkpoints ({fold_idx} substituted per fold)
+tmnet_path:  "/usagers4/p123507/MoPred/outputs/CondiNet/logs/07_17/15.40._CondiNet_MM_run/fold_{fold_idx}/condinet_dvfsup2/model_best_condinet.pth"
+rvnet_path:  "/usagers4/p123507/MoPred/outputs/RefCondNet/logs/05_22/22.14._RefCondNet_MAE_run/fold_{fold_idx}/refenc_spark/model_best_refenc.pth"
+
+# --- runtime ---
+gpu_idx:     "2"
+num_workers: 8
+seed:        123
+
+# --- data ---
+nb_inputs:   3
+tp:          1
+condi_type:  "2"               # "1" | "2"  (navigator slice orientation)
+
+# --- Stage-2 training ---
+diffusion_epochs:     80
+lr:                   3e-4
+scheduler_patience:   3
+ddpm_weight:          1.0
+smooth_weight:        0.0
+smooth_weight_end:    0.0
+smooth_rampup_epochs: 0
+recon_weight:         0.0
+recon_weight_end:     0.0
+recon_rampup_epochs:  0
+batch_size:           12
+loss:                 ncc_as_loss
+
+# --- DDPM schedule ---
+T:          1000
+beta_max:   0.2
+ddim_steps: 150
+
+# ============================================================
+#  VAE sub-blocks (only the one matching vae_model is used)
+# ============================================================
+
+dvfvae:
+  base_channels:    16
+  latent_channels:  16
+  depth:            3
+  beta:             1.0e-2
+  lam_smooth:       0.05
+  lam_ffl:          0.1
+  ffl_alpha:        0.0
+  horizon:          1
+  use_bending:      true
+  recon_loss_type:  mse
+  band_low_thresh:  0.0
+  band_high_thresh: 0.0
+  lam_band_mid:     0.0
+  lam_band_high:    0.0
+  band_loss_type:   energy_ratio
+
+# ============================================================
+#  Diffusion sub-blocks (only the one matching diffusion_model is used)
+# ============================================================
+
+unet3d:
+  num_frames:          3
+  horizon:             1
+  pre_latent_dim:      64
+  Tr_n_heads:          8
+  Tr_enc_layers:       3
+  Tr_dec_layers:       3
+  condi_channels:      [16, 32, 64]
+  Tr_norm_before:      true
+  condi_type:          "2"
+  prior_type:          learned
+  unet_base_ch:        64
+  unet_ch_mults:       [1, 2]
+  unet_time_dim:       128
+  num_res_blocks:      2
+  res_dropout:         0.1
+  use_self_attn:       true
+  cond_type:           film
+  cond_n_heads:        4
+  latent_ch:           16
+  low_tau_frac:        0.5
+  snr_gamma:           5.0
+  use_spatial_weight:  false
+  spatial_weight_max:  3.0
+  cfg_scale:           1.0
+  predict_mode:        v
+  use_h_t:             true
+  use_f_ref:           true
+  use_cond_proj:       false
+  ctx_mode:            film
+  use_bottleneck_attn: false
+  self_attn_full_res:  true
+  zero_context:        false

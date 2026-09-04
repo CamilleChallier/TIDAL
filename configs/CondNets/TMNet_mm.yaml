@@ -1,0 +1,75 @@
+# --- paths ---
+logging_dir: outputs/TMNet
+data_dir:    /store/usagers/livazra/Nav_dataset/
+name:        TMNet_MM_run_conditype1
+
+# --- registration backbone ---
+reg_model:              mambamorph
+vm_checkpoint:          /usagers4/p123507/MoPred/outputs/MambaMorph/logs/07_14/20.55._mambamorph_liver_run/mambamorph/model_best_mm.pth
+mambamorph_patch_size:  2
+mambamorph_freq_aware:  true
+mambamorph_embed_dim: 48
+
+tmnet_dir_name: /usagers4/p123507/MoPred/outputs/TMNet/logs/07_17/15.40._TMNet_MM_run
+
+# --- runtime ---
+gpu_idx:     "1"
+num_workers: 8
+seed:        123
+
+# --- data ---
+nb_inputs:   3
+tp:          1
+vol_size: [32, 64, 64]
+
+# --- training ---
+vae_epochs:  50
+lr_vae:      1e-5
+batch_size:  16
+
+optimizer:    adamw
+weight_decay: 5.0e-3
+
+# Scheduler
+scheduler:       cosine
+cosine_t_max:    200
+cosine_eta_min:  1.0e-7
+
+# Early stopping
+early_stopping_patience: 25
+early_stopping_delta:    1e-4
+
+kl_warmup_epochs: 10
+
+# Model
+tmnet_horizon:        1
+tmnet_num_frames:     3
+tmnet_condi_channels: [16, 32, 64]
+tmnet_Tr_n_heads:     8
+tmnet_Tr_enc_layers:  3
+tmnet_Tr_dec_layers:  3
+tmnet_Tr_norm_before: true
+tmnet_pre_latent_dim: 64
+tmnet_condi_type:     "1"
+tmnet_prior_type:     "learned"
+
+# Image-supervision training (train_tmnet_priormulti_image)
+tmnet_img_loss:               mse
+tmnet_kl_beta: 0.2         # down from 0.5
+tmnet_kl_warmup_epochs: 30 # up from 20
+
+# Auxiliary alignment losses
+tmnet_phi_loss_weight:    0.3
+tmnet_amp_loss_weight:    0.0
+
+# MAE
+tmnet_patch_size:           8
+tmnet_mask_ratio:           0.6
+tmnet_mask_warmup_epochs:   0
+tmnet_img_size:             [32, 64]
+
+# Contrastive pretraining (train_tmnet_contrastive)
+tmnet_contrast_proj_dim:    128
+tmnet_contrast_temperature: 0.07
+tmnet_contrast_tau_pos:     0.05
+tmnet_contrast_tau_neg:     0.15

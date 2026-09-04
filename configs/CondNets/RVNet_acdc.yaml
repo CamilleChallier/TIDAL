@@ -1,0 +1,45 @@
+# --- paths ---
+logging_dir: outputs/RVNet
+data_dir:    /volatile/data/cam/ACDC/database
+downsample_to_liver: true
+cache_dir:   /volatile/data/cam/ACDC/cache_liver
+name:        RVNet_ACDC_SparK_run
+reference_slices_path : 4D_MoPred_liver/data/reference_slices.csv
+
+# --- runtime ---
+gpu_idx:     "0"
+num_workers: 6
+seed:        123
+
+# --- data ---
+nb_inputs: 3
+tp:        1
+vol_size: [32, 64, 64]   # CANONICAL_SHAPE — replaces the liver (32, 64, 64)
+
+# --- training ---
+vae_epochs: 200
+lr_vae:      5e-5
+batch_size:  64
+
+# Optimizer
+optimizer:    adamw
+weight_decay: 5.0e-3
+
+# Scheduler
+scheduler:       cosine
+cosine_t_max:    200
+cosine_eta_min:  1.0e-7
+
+# Early stopping
+early_stopping_patience: 20
+early_stopping_delta:    1e-4
+
+# Model
+rvnet_enc_channels:   [16, 32, 64]
+rvnet_pre_latent_dim: 64
+
+# SparK
+rvnet_patch_size:         4
+rvnet_mask_ratio:          0.6
+rvnet_mask_warmup_epochs:  0
+rvnet_dec_width:           64
