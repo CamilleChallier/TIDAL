@@ -15,34 +15,21 @@ interchangeable with one trained without it — the output filename below
 gets an `_oriented` suffix whenever it's set, specifically so the two never
 silently overwrite each other.
 
-Requires the `mamba` conda env (mamba_ssm is a CUDA extension not installed
-in `mopred`):
-    /usagers4/p123507/miniconda3/envs/mamba/bin/python -m 4D_MoPred_liver.scripts.train_MambaMorph_ACDC \\
-        --config 4D_MoPred_liver/configs/MambaMorph/mambamorph_acdc.yaml
-
-This does NOT touch pretrained_models/VM_acdc.pth — the trained checkpoint is
-saved to pretrained_models/MM_acdc.pth instead, so anything currently loading
-the VoxelMorph ACDC checkpoint is unaffected until you explicitly swap it in.
-
 Usage
 -----
 # Train
-python -m 4D_MoPred_liver.scripts.train_MambaMorph_ACDC \\
-    --config 4D_MoPred_liver/configs/MambaMorph/mambamorph_acdc.yaml
+python -m scripts.train_MambaMorph_ACDC \\
+    --config configs/MambaMorph/mambamorph_acdc.yaml
 
 # Resume from checkpoint
-python -m 4D_MoPred_liver.scripts.train_MambaMorph_ACDC \\
-    --config 4D_MoPred_liver/configs/MambaMorph/mambamorph_acdc.yaml \\
-    --checkpoint pretrained_models/MM_acdc.pth
+python -m scripts.train_MambaMorph_ACDC \\
+    --config configs/MambaMorph/mambamorph_acdc.yaml \\
+    --checkpoint <path/to/checkpoint.pth>
 
-# Test (evaluate a checkpoint on the held-out ACDC test fold)
-python -m 4D_MoPred_liver.scripts.train_MambaMorph_ACDC --train_test test  --checkpoint pretrained_models/MM_acdc.pth
-
-# Test on the liver dataset instead of ACDC (no --config needed)
-python -m 4D_MoPred_liver.scripts.train_MambaMorph_ACDC \\
-    --train_test test \\
-    --dataset liver \\
-    --checkpoint pretrained_models/MM_acdc.pth
+# Test
+python -m scripts.train_MambaMorph_ACDC \\
+    --config configs/MambaMorph/mambamorph_acdc.yaml \\
+    --train_test test --checkpoint <path/to/checkpoint.pth>
 """
 
 from __future__ import annotations

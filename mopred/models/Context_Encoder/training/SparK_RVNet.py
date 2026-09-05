@@ -1,9 +1,13 @@
 """
-SparK-style masked pretraining wrapper for RV-Net in 3D (ICLR 2023).
+SparK-style masked pretraining wrapper for RV-Net in 3D.
 Randomly masks 3D patches, propagates the binary mask through the encoder to
 suppress masked positions, densifies with learned mask tokens, and reconstructs
 via a lightweight hierarchical ConvTranspose3d decoder. Loss is per-patch
 normalised MSE on masked patches only. After pretraining only RVNet is kept.
+
+Inspired by SparK (Tian et al., "Designing BERT for Convolutional Networks:
+Sparse and Hierarchical Masked Modeling", ICLR 2023).
+https://github.com/keyu-tian/SparK
 """
 
 from __future__ import annotations

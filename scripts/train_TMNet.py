@@ -15,19 +15,19 @@ The backbone (TMNet_Tr_priormulti or TMNet_Tr_priormulti_mask) is pretrained
 The MAE decoder is a lightweight scaffold
 that is discarded after pretraining.
 
-Usage
+Usage (run from the TIDAL/ directory)
 -----
-# Stage 2b — pretrain TMNet with MAE
-python -m 4D_MoPred_liver.scripts.train_TMNet --config 4D_MoPred_liver/configs/CondNets/TMNet.yaml --train_test train_tmnet_priormulti_dvf
+# Stage 1a — pretrain TMNet with DVF supervision
+python -m scripts.train_TMNet --config configs/CondNets/TMNet_mm.yaml --train_test train_tmnet_priormulti_dvf
 
-# Stage 2b — compute embedding statistics from an existing checkpoint
-python -m 4D_MoPred_liver.scripts.train_TMNet \\
-    --config 4D_MoPred_liver/configs/CondNets/TMNet.yaml \\
+# Stage 1a — compute embedding statistics from an existing checkpoint
+python -m scripts.train_TMNet \\
+    --config configs/CondNets/TMNet_mm.yaml \\
     --train_test compute_stats \\
     --tmnet_dir_name <run_dir>
 
-# Stage 2b — test reconstruction quality on the test set
-python -m 4D_MoPred_liver.scripts.train_TMNet --config outputs/TMNet/logs/04_24/13.17._TMNet_run/fold_0/tmnet/TMNet.yaml --train_test test_tmnet --tmnet_dir_name /home/challierc/outputs/TMNet/logs/04_24/13.17._TMNet_run
+# Stage 1a — test reconstruction quality on the test set
+python -m scripts.train_TMNet --config configs/CondNets/TMNet_mm.yaml --train_test test_tmnet --tmnet_dir_name <run_dir>
 """
 
 from __future__ import annotations

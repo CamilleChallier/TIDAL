@@ -4,6 +4,8 @@ Pretraining wrappers for TM-Net (temporal context encoder).
 ``PredictiveTMNet`` uses next-frame prediction; ``MopTRTMNet`` uses multi-step
 future prediction. After pretraining only TMNetEncoder is kept — the decoder
 scaffolds are discarded.
+
+``MopTRTMNet`` follows the MopTR training approach (MedICAL Lab, internal project).
 """
 
 from __future__ import annotations

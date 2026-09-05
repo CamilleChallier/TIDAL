@@ -39,19 +39,17 @@ At inference, the denoised latent is decoded by DVFVAE (D) and the resulting DVF
 
 ## Installation
 
-Python ≥ 3.10 required. Full pinned environment in `requirements.txt`.
+Python 3.12 required (the pinned `requirements.txt` was generated on Python 3.12; some packages require ≥ 3.11).
 
 ```bash
-# 1. Create environment
-conda create -n tidal python=3.10
+conda create -n tidal python=3.12
 conda activate tidal
-
-# 2. Install the package
+pip install -r requirements.txt
+pip install mamba-ssm==2.3.2.post1 causal-conv1d==1.6.2.post1 --no-build-isolation --no-deps --no-cache-dir
 pip install -e .
-
-# 3. MambaMorph backbone (requires CUDA ≥ 11.6 and a compatible GPU)
-pip install mamba-ssm causal-conv1d
 ```
+
+> `nvcc` must be on PATH when installing `mamba-ssm` (it is compiled from source). If `which nvcc` returns nothing: `conda install -c nvidia cuda-nvcc`.
 
 ---
 
@@ -67,6 +65,8 @@ python -m scripts.train_MambaMorph_liver \
 ```
 
 ### Stage 1a — TM-Net (temporal context encoder)
+
+Set `vm_checkpoint` in `configs/CondNets/TMNet_mm.yaml` to the MambaMorph checkpoint produced by Stage 0 (e.g. `outputs/MambaMorph/<run_dir>/mambamorph/model_best_mm.pth`). Also set `reg_model` to `mambamorph` or `voxelmorph` depending on which backbone was trained.
 
 Pretrained with DVF-slice supervision (DVFSup variant):
 
@@ -111,7 +111,61 @@ python -m scripts.train_CLDM \
     --checkpoint <path/to/run_dir>
 ```
 
-For **ACDC cardiac**, use the `_acdc` config variants and `train_CLDM_ACDC.py`.
+### ACDC cardiac pipeline
+
+Each stage has a dedicated ACDC script. The pipeline mirrors the liver one above with `_acdc` configs and `_ACDC` scripts.
+
+> **`mopred/data/reference_slices.csv`** — pre-computed per-patient heart centroid and in-plane rotation angles for the ACDC dataset. Used by the ACDC data loaders to crop around each patient's heart and correct orientation. Already included in the repo; you do not need to regenerate it unless you add new patients. To regenerate:
+> ```bash
+> python scripts/acdc_reference_slice.py \
+>     --data_dir /path/to/ACDC/database \
+>     --out_csv mopred/data/reference_slices.csv
+> ```
+
+**Stage 0 — MambaMorph (ACDC)**
+```bash
+python -m scripts.train_MambaMorph_ACDC \
+    --config configs/MambaMorph/mambamorph_acdc.yaml
+```
+
+Set `vm_checkpoint` in `configs/CondNets/TMNet_acdc.yaml`, `configs/VAE/dvfvae_acdc.yaml`, and `configs/CLDM/UNet3D_acdc.yaml` to the checkpoint produced here.
+
+**Stage 1a — TM-Net (ACDC)**
+```bash
+python -m scripts.train_TMNet_ACDC \
+    --config configs/CondNets/TMNet_acdc.yaml \
+    --train_test train_tmnet_priormulti_dvf
+```
+
+**Stage 1b — RV-Net (ACDC)**
+```bash
+python -m scripts.train_RVNet_ACDC \
+    --config configs/CondNets/RVNet_acdc.yaml \
+    --train_test train_rvnet_spark
+```
+
+**Stage 2 — DVFVAE (ACDC)**
+```bash
+python -m scripts.train_VAE_ACDC \
+    --config configs/VAE/dvfvae_acdc.yaml \
+    --train_test train_vae
+```
+
+Set `vae_dir_name` in `configs/CLDM/UNet3D_acdc.yaml` to the output directory of this run.
+
+**Stage 3 — UNet3D diffusion model (ACDC)**
+```bash
+# Train
+python -m scripts.train_CLDM_ACDC \
+    --config configs/CLDM/UNet3D_acdc.yaml \
+    --train_test train
+
+# Test
+python -m scripts.train_CLDM_ACDC \
+    --config configs/CLDM/UNet3D_acdc.yaml \
+    --train_test test \
+    --checkpoint <path/to/run_dir>
+```
 
 ---
 
@@ -125,7 +179,7 @@ TIDAL/
 │   ├── MambaMorph/        mambamorph_liver.yaml, mambamorph_acdc.yaml
 │   └── VAE/               dvfvae_mm.yaml, dvfvae_acdc.yaml
 ├── docs/
-│   └── pipeline.pdf       Architecture figure
+│   └── pipeline.jpg       Architecture figure
 ├── mopred/
 │   ├── models/
 │   │   ├── CLDM/          UNet3D.py + DDPM base (noise schedule, samplers)

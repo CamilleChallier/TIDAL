@@ -4,9 +4,9 @@ Supports train_vae, compute_stats (latent statistics consumed by train_CLDM), an
 
 Usage
 -----
-python -m tidal.scripts.train_VAE --config configs/VAE/dvfvae_mm.yaml --train_test train_vae
-python -m tidal.scripts.train_VAE --config configs/VAE/dvfvae_mm.yaml --train_test compute_stats
-python -m tidal.scripts.train_VAE --config configs/VAE/dvfvae_mm.yaml --train_test test_vae
+python -m scripts.train_VAE --config configs/VAE/dvfvae_mm.yaml --train_test train_vae
+python -m scripts.train_VAE --config configs/VAE/dvfvae_mm.yaml --train_test compute_stats
+python -m scripts.train_VAE --config configs/VAE/dvfvae_mm.yaml --train_test test_vae
 """
 
 from __future__ import annotations

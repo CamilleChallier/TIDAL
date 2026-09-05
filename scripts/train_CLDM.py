@@ -5,10 +5,10 @@ Trains UNet3D on a frozen DVFVAE latent space conditioned on TM-Net and RV-Net e
 Usage
 -----
 # Stage 2 — train
-python -m tidal.scripts.train_CLDM --config configs/CLDM/UNet3D.yaml --train_test train
+python -m scripts.train_CLDM --config configs/CLDM/UNet3D.yaml --train_test train
 
-# Stage 2 — test
-python -m tidal.scripts.train_CLDM --config configs/CLDM/UNet3D.yaml --train_test test
+# Stage 3 — test
+python -m scripts.train_CLDM --config configs/CLDM/UNet3D.yaml --train_test test --checkpoint <path/to/run_dir>
 """
 
 from __future__ import annotations

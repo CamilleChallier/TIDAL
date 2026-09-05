@@ -10,13 +10,13 @@ in configs/CLDM/UNet3D_acdc.yaml before running.
 Usage
 -----
 # Stage 2 — train
-python -m 4D_MoPred_liver.scripts.train_CLDM_ACDC \
-    --config 4D_MoPred_liver/configs/CLDM/UNet3D_acdc.yaml \
+python -m scripts.train_CLDM_ACDC \
+    --config configs/CLDM/UNet3D_acdc.yaml \
     --train_test train
 
 # Stage 2 — test
-python -m 4D_MoPred_liver.scripts.train_CLDM_ACDC \
-    --config 4D_MoPred_liver/configs/CLDM/UNet3D_acdc.yaml \
+python -m scripts.train_CLDM_ACDC \
+    --config configs/CLDM/UNet3D_acdc.yaml \
     --train_test test \
     --checkpoint <path/to/logs/run_dir>
 """

@@ -47,6 +47,6 @@ downsample_to_liver: True
 mambamorph_freq_aware: True
 mambamorph_patch_size: 2
 
-reference_slices_path : 4D_MoPred_liver/data/reference_slices.csv
+reference_slices_path : mopred/data/reference_slices.csv
 
 mambamorph_embed_dim : 48

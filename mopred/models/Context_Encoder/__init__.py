@@ -6,3 +6,4 @@ from .TM_Net import (
 
 from .training.Predictive_TMNet import PredictiveTMNet, MopTRTMNet, DVFSupTMNet
 from .training.SparK_RVNet import SparKRVNet
+from .pretrained_adapters import TMNetDiTAdapter, RVNetDiTAdapter

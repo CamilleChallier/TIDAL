@@ -6,13 +6,13 @@ the MambaMorph/VoxelMorph checkpoint in place of their liver counterparts.
 Usage
 -----
 # Stage 1 — train a VAE
-python -m 4D_MoPred_liver.scripts.train_VAE_ACDC --config 4D_MoPred_liver/configs/VAE/dvfvae_acdc.yaml --train_test train_vae
+python -m scripts.train_VAE_ACDC --config configs/VAE/dvfvae_acdc.yaml --train_test train_vae
 
 # Stage 1 — compute latent statistics from an existing checkpoint (for CLDM training)
-python -m 4D_MoPred_liver.scripts.train_VAE_ACDC --config 4D_MoPred_liver/configs/VAE/dvfvae_acdc.yaml --train_test compute_stats
+python -m scripts.train_VAE_ACDC --config configs/VAE/dvfvae_acdc.yaml --train_test compute_stats
 
 # Stage 1 — test a VAE's reconstruction quality on the test set
-python -m 4D_MoPred_liver.scripts.train_VAE_ACDC --config 4D_MoPred_liver/configs/VAE/dvfvae_acdc.yaml --train_test test_vae
+python -m scripts.train_VAE_ACDC --config configs/VAE/dvfvae_acdc.yaml --train_test test_vae
 """
 
 from __future__ import annotations

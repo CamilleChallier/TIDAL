@@ -11,19 +11,19 @@ Mirrors the organisation of train_VAE.py:
   - embedding statistics saved to rvnet_stats.pt at the end
     (analogous to latent_stats.pt, consumed by train_CLDM)
 
-Usage
+Usage (run from the TIDAL/ directory)
 -----
-# Stage 2a — pretrain RVNet with MAE
-python -m 4D_MoPred_liver.scripts.train_RVNet --config 4D_MoPred_liver/configs/CondNets/RVNet.yaml --train_test train_rvnet
+# Stage 1b — pretrain RVNet with SparK
+python -m scripts.train_RVNet --config configs/CondNets/RVNet.yaml --train_test train_rvnet_spark
 
-# Stage 2a — compute embedding statistics from an existing checkpoint
-python -m 4D_MoPred_liver.scripts.train_RVNet \\
-    --config 4D_MoPred_liver/configs/RVNet.yaml \\
+# Stage 1b — compute embedding statistics from an existing checkpoint
+python -m scripts.train_RVNet \\
+    --config configs/CondNets/RVNet.yaml \\
     --train_test compute_stats \\
     --rvnet_dir_name <run_dir>
 
-# Stage 2a — test reconstruction quality on the test set
-python -m 4D_MoPred_liver.scripts.train_RVNet --config outputs/RVNet/logs/04_24/13.17._RVNet_MAE_run/fold_0/rvnet/RVNet.yaml --train_test test_rvnet --rvnet_dir_name /home/challierc/outputs/RVNet/logs/04_24/13.17._RVNet_MAE_run
+# Stage 1b — test reconstruction quality on the test set
+python -m scripts.train_RVNet --config configs/CondNets/RVNet.yaml --train_test test_rvnet --rvnet_dir_name <run_dir>
 
 """
 
@@ -52,7 +52,6 @@ from mopred.models.Context_Encoder import RVNet, SparKRVNet
 from mopred.data.splits       import make_folds_3fold as make_train_val_test_folds
 from mopred.data.data_loaders import NAVIGATOR_4D_Dataset_multitime, CachedDVF_Dataset, RefVolume_Dataset, RefVolume_Dataset_augment
 from mopred.data.loading      import save_params_txt
-from mopred.models            import Voxelmorph
 from mopred.utils.early_stopping  import EarlyStopping
 from mopred.utils.io              import cond_mkdir, custom_load, custom_save
 from mopred.utils.training        import (
@@ -206,7 +205,6 @@ def train_rvnet(
     folds: tuple,
     fold_idx: str,
     dir_name: str,
-    vm: torch.nn.Module,
     device: torch.device,
 ) -> None:
     """
@@ -676,7 +674,6 @@ def train_rvnet_simmim(
     folds:    tuple,
     fold_idx: str,
     dir_name: str,
-    vm:       torch.nn.Module,
     device:   torch.device,
 ) -> None:
     """
@@ -881,7 +878,6 @@ def train_rvnet_spark(
     folds:    tuple,
     fold_idx: str,
     dir_name: str,
-    vm:       torch.nn.Module,
     device:   torch.device,
 ) -> None:
     """
@@ -1090,7 +1086,6 @@ def train_rvnet_moco(
     folds: tuple,
     fold_idx: str,
     dir_name: str,
-    vm: torch.nn.Module,
     device: torch.device,
 ) -> None:
     """
@@ -1341,20 +1336,6 @@ if __name__ == "__main__":
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True, warn_only=True)
 
-    # Frozen VoxelMorph — needed only to build the DVF cache (same as train_vae.py).
-    # If the cache already exists from a prior VAE training run it is reused as-is.
-    current_path  = os.path.dirname(os.path.abspath(__file__))
-    VM_CHECKPOINT = os.path.join(os.path.dirname(current_path), "pretrained_models", "VM.pth")
-    VOL_SIZE      = (32, 64, 64)
-
-    vm = Voxelmorph(
-        VOL_SIZE, [16, 32, 32, 32], [32, 32, 32, 32, 32, 16, 16],
-        full_size=True,
-    ).to(device)
-    custom_load(vm, VM_CHECKPOINT, device)
-    vm.eval()
-    for param in vm.parameters():
-        param.requires_grad_(False)
 
     train_folds, valid_folds, test_folds = make_train_val_test_folds()
 
@@ -1375,7 +1356,6 @@ if __name__ == "__main__":
                 folds    = (train_folds[fold_idx], valid_folds[fold_idx]),
                 fold_idx = str(fold_idx),
                 dir_name = dir_name,
-                vm       = vm,
                 device   = device,
             )
 
@@ -1387,7 +1367,6 @@ if __name__ == "__main__":
                 folds    = (train_folds[fold_idx], valid_folds[fold_idx]),
                 fold_idx = str(fold_idx),
                 dir_name = dir_name,
-                vm       = vm,
                 device   = device,
             )
     elif args.train_test == "train_rvnet_moco":
@@ -1397,7 +1376,6 @@ if __name__ == "__main__":
                 folds    = (train_folds[fold_idx], valid_folds[fold_idx]),
                 fold_idx = str(fold_idx),
                 dir_name = dir_name,
-                vm       = vm,
                 device   = device,
             )
 
@@ -1409,7 +1387,6 @@ if __name__ == "__main__":
                 folds    = (train_folds[fold_idx], valid_folds[fold_idx]),
                 fold_idx = str(fold_idx),
                 dir_name = dir_name,
-                vm       = vm,
                 device   = device,
             )
 

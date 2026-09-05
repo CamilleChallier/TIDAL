@@ -18,7 +18,7 @@ try:
 except ImportError as e:
     raise ImportError(
         "MambaMorph requires the `mamba_ssm` package (CUDA extension), which "
-        "is not installed in this environment. Activate the `mamba` conda env."
+        "is not installed in this environment."
     ) from e
 
 

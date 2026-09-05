@@ -12,7 +12,7 @@ vm_checkpoint:          /store/usagers/p123507/MoPred/outputs/Mambamorph_ACDC/lo
 mambamorph_patch_size:  2
 mambamorph_freq_aware:  true
 mambamorph_embed_dim: 48
-reference_slices_path : 4D_MoPred_liver/mopred/data/reference_slices.csv
+reference_slices_path : mopred/data/reference_slices.csv
 
 # Set to resume from a CLDM checkpoint (leave empty to train from scratch)
 checkpoint: ""

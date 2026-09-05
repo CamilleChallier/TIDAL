@@ -1771,6 +1771,11 @@ import torch
 import torch.nn.functional as F
 from torch import nn, Tensor
 
+# Transformer classes below (Transformer, TransformerEncoder, TransformerDecoder,
+# TransformerEncoderLayer, TransformerDecoderLayer) adapted from DETR
+# (Carion et al., "End-to-End Object Detection with Transformers", ECCV 2020)
+# https://github.com/facebookresearch/detr/blob/main/models/transformer.py
+
 
 class Transformer(nn.Module):
 

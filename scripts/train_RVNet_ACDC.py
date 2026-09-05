@@ -12,11 +12,11 @@ other variants), so no VM checkpoint is loaded here.
 Usage
 -----
 # Pretrain RVNet with SparK
-python -m 4D_MoPred_liver.scripts.train_RVNet_ACDC --config 4D_MoPred_liver/configs/CondNets/RVNet_acdc.yaml --train_test train_rvnet_spark
+python -m scripts.train_RVNet_ACDC --config configs/CondNets/RVNet_acdc.yaml --train_test train_rvnet_spark
 
 # Compute embedding statistics from an existing checkpoint
-python -m 4D_MoPred_liver.scripts.train_RVNet_ACDC \\
-    --config 4D_MoPred_liver/configs/CondNets/RVNet_acdc.yaml \\
+python -m scripts.train_RVNet_ACDC \\
+    --config configs/CondNets/RVNet_acdc.yaml \\
     --train_test compute_stats \\
     --rvnet_dir_name <run_dir>
 """

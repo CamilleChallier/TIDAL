@@ -4,7 +4,7 @@ data_dir:    /volatile/data/cam/ACDC/database
 downsample_to_liver: true
 cache_dir:   /volatile/data/cam/ACDC/cache_liver
 name:        RVNet_ACDC_SparK_run
-reference_slices_path : 4D_MoPred_liver/data/reference_slices.csv
+reference_slices_path : mopred/data/reference_slices.csv
 
 # --- runtime ---
 gpu_idx:     "0"

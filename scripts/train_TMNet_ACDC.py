@@ -16,7 +16,7 @@ Slice positions for conditioning (design decision #5 in plan):
 Usage
 -----
 # DVF-supervised TMNet (dvfsup2) — primary ACDC training mode
-python -m 4D_MoPred_liver.scripts.train_TMNet_ACDC  --config 4D_MoPred_liver/configs/CondNets/TMNet_acdc.yaml --train_test train_tmnet_priormulti_dvf
+python -m scripts.train_TMNet_ACDC --config configs/CondNets/TMNet_acdc.yaml --train_test train_tmnet_priormulti_dvf
 """
 
 from __future__ import annotations
